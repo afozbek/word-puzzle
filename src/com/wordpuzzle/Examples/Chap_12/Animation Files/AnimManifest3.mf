@@ -1,0 +1,4 @@
+Main-Class: AnimBean3
+
+Name: animBeans/AnimBean3.class
+Java-Bean: True

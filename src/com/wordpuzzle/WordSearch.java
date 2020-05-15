@@ -174,6 +174,6 @@ public class WordSearch {
     }
 
     public static void main(String[] args) {
-        printResult(createWordSearch(readWords(dictionaryFileName)));
+
     }
 }

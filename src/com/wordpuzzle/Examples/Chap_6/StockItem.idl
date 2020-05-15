@@ -1,0 +1,16 @@
+module Sales
+{
+	interface StockItem
+	{
+		readonly attribute string code;
+		attribute long currentLevel;
+
+		long addStock(in long incNumber);
+		long removeStock(in long decNumber);
+	};
+	
+	interface StockItemFactory
+	{
+		StockItem createItem(in string newCode, in long newLevel);
+	};
+};
