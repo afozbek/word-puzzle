@@ -18,7 +18,10 @@ public class DaytimeServer
 
          do
          {
+
             socket = server.accept();
+            System.out.println("Hello World");
+
             PrintWriter output =
                 new PrintWriter(socket.getOutputStream(),true);
             Date date = new Date();
@@ -28,7 +31,7 @@ public class DaytimeServer
       }
       catch (IOException ioEx)
       {
-         System.out.println(ioEx);
+         System.out.println("Merhabalar");
       }
    }
 }

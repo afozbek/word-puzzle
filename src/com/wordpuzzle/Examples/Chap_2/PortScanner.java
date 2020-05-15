@@ -108,7 +108,9 @@ public class PortScanner extends JFrame
               		socket.close();
          		}
          		catch (IOException ioEx)
-          		{}// No server on this port
+          		{
+					System.out.println("No ports found on that server");
+				}// No server on this port
       		}
     	}
      	catch (UnknownHostException uhEx)

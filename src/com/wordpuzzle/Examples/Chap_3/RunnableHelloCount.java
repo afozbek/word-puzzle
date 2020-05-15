@@ -1,5 +1,4 @@
 package com.wordpuzzle.Examples.Chap_3;
-
 public class RunnableHelloCount implements Runnable
 {
 	private Thread thread1, thread2;

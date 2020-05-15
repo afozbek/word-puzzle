@@ -1,4 +1,0 @@
-Main-Class: AnimBean2
-
-Name: animBeans/AnimBean2.class
-Java-Bean: True

@@ -1,8 +1,0 @@
-module SimpleCORBAExample
-{
-	interface Hello
-	{
-		string getGreeting();
-	};
-};
-

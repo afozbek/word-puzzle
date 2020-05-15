@@ -1,5 +1,4 @@
 package com.wordpuzzle.Examples.Chap_3;
-
 class Resource
 {
 	private int numResources;
