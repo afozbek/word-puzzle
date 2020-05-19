@@ -5,9 +5,13 @@ import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.logging.Logger;
+import java.util.List;
 
 public class KelimeOyunuBoard extends JFrame{
-
     private JPanel mainGamePanel = new JPanel();
     // OYUN KURMA
     private JTextField txt_kazanma_puani = new JTextField(8);
@@ -36,9 +40,13 @@ public class KelimeOyunuBoard extends JFrame{
     private  JButton oyun_kur;
     private  JButton oyuna_katil ;
 
-    private EchoNIOServer echoNIOServer;
+    private Logger logger = Logger.getGlobal();
+
+    List<WordSearchClient> players = new ArrayList<WordSearchClient>();
+
     public KelimeOyunuBoard()
     {
+
         super("Kelime Oyunu");
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 
@@ -57,14 +65,22 @@ public class KelimeOyunuBoard extends JFrame{
         mainGamePanel.add(lbl_kazanma_puani);
         mainGamePanel.add(txt_kazanma_puani);
         mainGamePanel.add(lbl_port_kur);
+
+        txt_port_kur.setText("133");
         mainGamePanel.add(txt_port_kur);
 
         mainGamePanel.add(lbl_oyuna_katil);
         mainGamePanel.add(lbl_ip);
+
+        txt_ip.setText("localhost");
         mainGamePanel.add(txt_ip);
         mainGamePanel.add(lbl_nickname);
+
+        txt_nickname.setText("afozbek");
         mainGamePanel.add(txt_nickname);
         mainGamePanel.add(lbl_port_katil);
+
+        txt_port_katil.setText("133");
         mainGamePanel.add(txt_port_katil);
 
         mainGamePanel.add(oyun_kur);
@@ -104,14 +120,34 @@ public class KelimeOyunuBoard extends JFrame{
 //            int winPoint = Integer.parseInt(txt_kazanma_puani.getText());
             int port = Integer.parseInt(txt_port_kur.getText());
 
+            // New SocketServer
+            WordSearchServer wordSearchServer = new WordSearchServer("localhost", port);
 
         } catch (NumberFormatException ex) {
-            notifyUser("Beklenmedik bir hata oluştu 🤴");
+            notifyUser("Lütfen gerekli alanları rakam olucak şeklinde doldurunuz.");
+            logger.severe("Number düzgün formatlanmadı.");
+        } catch (IOException e) {
+            notifyUser("Server Socket oluşturulurken IO hatası alındı");
+            logger.severe("Server Socket oluşturulurken IO hatası alındı");
         }
     }
 
     public void joinGameHandler() {
         System.out.println("JOINING THE GAME");
+        try {
+            String ip = txt_ip.getText();
+            int port = Integer.parseInt(txt_port_katil.getText());
+            String nickName = txt_nickname.getText();
+
+            // New SocketClient
+            WordSearchClient wordSearchClient = new WordSearchClient(nickName, port, ip);
+        } catch (NumberFormatException ex) {
+            notifyUser("Lütfen gerekli alanları rakam olucak şeklinde doldurunuz.");
+            logger.severe("Number düzgün formatlanmadı.");
+        } catch (IOException e) {
+            notifyUser("Server Socket oluşturulurken IO hatası alındı");
+            logger.severe("Server Socket oluşturulurken IO hatası alındı");
+        }
     }
 
     public static void main(String[] args) {
