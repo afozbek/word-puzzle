@@ -59,10 +59,16 @@ public class KelimeOyunuBoard extends JFrame{
 
         mainGamePanel.add(lbl_kurulum);
         mainGamePanel.add(lbl_alan_x);
+
+        txt_alan_x.setText("10");
         mainGamePanel.add(txt_alan_x);
         mainGamePanel.add(lbl_alan_y);
+
+        txt_alan_y.setText("10");
         mainGamePanel.add(txt_alan_y);
         mainGamePanel.add(lbl_kazanma_puani);
+
+        txt_kazanma_puani.setText("15");
         mainGamePanel.add(txt_kazanma_puani);
         mainGamePanel.add(lbl_port_kur);
 
@@ -115,13 +121,13 @@ public class KelimeOyunuBoard extends JFrame{
     public void createGameHandler() {
         System.out.println("CREATING THE GAME");
         try {
-//            int boardX = Integer.parseInt(txt_alan_x.getText());
-//            int boardY = Integer.parseInt(txt_alan_y.getText());
-//            int winPoint = Integer.parseInt(txt_kazanma_puani.getText());
+            int boardX = Integer.parseInt(txt_alan_x.getText());
+            int boardY = Integer.parseInt(txt_alan_y.getText());
+            int winPoint = Integer.parseInt(txt_kazanma_puani.getText());
             int port = Integer.parseInt(txt_port_kur.getText());
 
             // New SocketServer
-            WordSearchServer wordSearchServer = new WordSearchServer("localhost", port);
+            WordSearchServer wordSearchServer = new WordSearchServer("localhost", port, winPoint, boardX, boardY);
 
         } catch (NumberFormatException ex) {
             notifyUser("Lütfen gerekli alanları rakam olucak şeklinde doldurunuz.");

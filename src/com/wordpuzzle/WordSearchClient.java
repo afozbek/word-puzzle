@@ -30,9 +30,13 @@ public class WordSearchClient {
         HOST = host;
 
         selector = Selector.open();
+        clientSocketChannel = SocketChannel.open();
 
-        hostAddress = new InetSocketAddress(host, port);
-        clientSocketChannel = SocketChannel.open(hostAddress);
+        // To use selector we must set blocking to false
+        clientSocketChannel.configureBlocking(false);
+        clientSocketChannel.connect(new InetSocketAddress(host, port));
+
+        clientSocketChannel.register(selector, SelectionKey.OP_CONNECT);
 
         WordSearchClientThread clientThread = new WordSearchClientThread();
         clientThread.start();
@@ -43,25 +47,55 @@ public class WordSearchClient {
         public void run() {
             logger.info("Client Thread started");
 
-            String threadName = Thread.currentThread().getName();
+            while(true) {
+                try {
+                    int readyChannels = selector.select();
 
-            // Send messages to server
-            String[] messages = new String[] { threadName + ": msg1", threadName + ": msg2", threadName + ": msg3" };
+                    if(readyChannels == 0) continue;
 
-            try {
-                for (int i = 0; i < messages.length; i++) {
-                    ByteBuffer buffer = ByteBuffer.allocate(74);
-                    buffer.put(messages[i].getBytes());
-                    buffer.flip();
-                    clientSocketChannel.write(buffer);
-                    System.out.println(messages[i]);
-                    buffer.clear();
+                    Iterator<SelectionKey> selectionKeysIterator = selector.selectedKeys().iterator();
+
+                    while(selectionKeysIterator.hasNext()) {
+                        SelectionKey selectionKey = selectionKeysIterator.next();
+                        selectionKeysIterator.remove();
+
+                        SocketChannel client = (SocketChannel) selectionKey.channel();
+
+                        if (!selectionKey.isValid()) {
+                            System.out.println("Not Valid");
+                            continue;
+                        }
+
+                        if (selectionKey.isConnectable()) {
+                            System.out.println("Connectable");
+
+                            if (client.isConnectionPending()) {
+                                try {
+                                    client.finishConnect();
+                                } catch (IOException ex) {ex.printStackTrace();}
+                            }
+
+                            client.register(selector, SelectionKey.OP_WRITE);
+                            continue;
+                        }
+
+                        if (selectionKey.isWritable()) {
+                            System.out.println("Writable");
+                            continue;
+                        }
+
+                        if (selectionKey.isReadable()) {
+                            System.out.println("Readable");
+                        }
+                    }
+
+
+                } catch (IOException e) {
+                    e.printStackTrace();
                 }
-            } catch (IOException ex) {
-
             }
         }
-
-
     }
+
+
 }

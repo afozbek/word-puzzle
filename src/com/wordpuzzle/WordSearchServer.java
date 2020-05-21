@@ -1,5 +1,7 @@
 package com.wordpuzzle;
 
+import javax.swing.*;
+import java.awt.*;
 import java.io.*;
 import java.net.InetSocketAddress;
 import java.net.ServerSocket;
@@ -17,6 +19,7 @@ import java.util.List;
 import java.util.logging.Logger;
 
 public class WordSearchServer {
+    // INSTANCE VARIABLES
     private final InetSocketAddress listenAddress;
     private final Selector selector;
     private final ServerSocketChannel serverSocketChannel;
@@ -24,14 +27,18 @@ public class WordSearchServer {
 
     private final int PORT;
     private final String HOST_ADDRESS;
+    private final int WIN_POINT;
+    private final int BOARD_X;
+    private final int BOARD_Y;
 
-    private List<SocketChannel> players;
-
-    public WordSearchServer(String hostAddress, int port) throws IOException {
+    public WordSearchServer(String hostAddress, int port, int winPoint, int boardX, int boardY) throws IOException {
         PORT = port;
         HOST_ADDRESS = hostAddress;
+        WIN_POINT = winPoint;
+        BOARD_X = boardX;
+        BOARD_Y = boardY;
 
-        players = new ArrayList<SocketChannel>();
+//        new KelimeOyunu(winPoint, boardX, boardY);
 
         listenAddress = new InetSocketAddress(hostAddress, port);
         selector = Selector.open();
@@ -66,6 +73,7 @@ public class WordSearchServer {
                     Set<SelectionKey> readyKeys = selector.selectedKeys();
                     Iterator<SelectionKey> selectionKeyIterator = readyKeys.iterator();
                     while (selectionKeyIterator.hasNext()) {
+
                         SelectionKey selectionKey = selectionKeyIterator.next();
                         selectionKeyIterator.remove();
 
@@ -73,23 +81,30 @@ public class WordSearchServer {
                             continue;
                         }
 
-                        handleClientConnection(selectionKey);
-                        handleReadDataFromClient(selectionKey);
-                        handleSendDataToClient(selectionKey);
+                        if (selectionKey.isAcceptable()) {
+                            handleClientConnection(selectionKey);
+                            continue;
+                        }
+
+                        if (selectionKey.isReadable()) {
+                            handleReadDataFromClient(selectionKey);
+                            continue;
+                        }
+
+                        if (selectionKey.isWritable()) {
+                            handleSendDataToClient(selectionKey);
+                            continue;
+                        }
                     }
-                } catch (IOException ex) {
-                    logger.severe("THREAD EXCEPTION HAPPENED");
+                } catch (IOException | ClassNotFoundException ex) {
+                    logger.severe("SERVER THREAD EXCEPTION HAPPENED");
                     ex.printStackTrace();
-                    break;
                 }
             }
         }
 
         // accept client connection
         private void handleClientConnection(SelectionKey selectionKey) throws IOException {
-            if (!selectionKey.isAcceptable()) { // Accept client connections
-                return;
-            }
             logger.info("Client trying to connect..");
 
             // TODO: Accept client connection
@@ -101,41 +116,18 @@ public class WordSearchServer {
             logger.info("Client connected to: " + clientSocketChannel.socket().getRemoteSocketAddress());
 
             clientSocketChannel.register(selector, SelectionKey.OP_READ);
+            System.out.println("Client is registered as read");
         }
 
         // read from the socket channel
-        private void handleReadDataFromClient(SelectionKey selectionKey) throws IOException {
-           if (!selectionKey.isReadable()) { // Read from client
-                return;
-           }
+        private void handleReadDataFromClient(SelectionKey selectionKey) throws IOException, ClassNotFoundException {
            logger.info("Client wants to send data");
 
-           // TODO: Read Data from Client
-            SocketChannel channel = (SocketChannel) selectionKey.channel();
-            ByteBuffer buffer = ByteBuffer.allocate(1024);
-            int numRead = -1;
-            numRead = channel.read(buffer);
 
-            if (numRead == -1) {
-                Socket socket = channel.socket();
-                SocketAddress remoteAddr = socket.getRemoteSocketAddress();
-                System.out.println("Connection closed by client: " + remoteAddr);
-                channel.close();
-                selectionKey.cancel();
-                return;
-            }
-
-            byte[] data = new byte[numRead];
-            System.arraycopy(buffer.array(), 0, data, 0, numRead);
-            System.out.println("Got: " + new String(data));
         }
 
         // send data to client channel
         private void handleSendDataToClient(SelectionKey selectionKey) throws IOException {
-           if (!selectionKey.isWritable()) { // Send to client
-                return;
-           }
-
            // TODO: Send Data to Client
         }
 
