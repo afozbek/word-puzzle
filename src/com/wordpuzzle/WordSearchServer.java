@@ -25,6 +25,8 @@ public class WordSearchServer {
     private final ServerSocketChannel serverSocketChannel;
     private final Logger logger = Logger.getGlobal();
 
+    private List<SocketChannel> clientChannels;
+
     private final int PORT;
     private final String HOST_ADDRESS;
     private final int WIN_POINT;
@@ -37,6 +39,8 @@ public class WordSearchServer {
         WIN_POINT = winPoint;
         BOARD_X = boardX;
         BOARD_Y = boardY;
+
+        clientChannels = new ArrayList<>();
 
 //        new KelimeOyunu(winPoint, boardX, boardY);
 
@@ -83,18 +87,17 @@ public class WordSearchServer {
 
                         if (selectionKey.isAcceptable()) {
                             handleClientConnection(selectionKey);
+                            handleSendDataToClient();
                             continue;
                         }
 
                         if (selectionKey.isReadable()) {
                             handleReadDataFromClient(selectionKey);
-                            continue;
                         }
 
-                        if (selectionKey.isWritable()) {
-                            handleSendDataToClient(selectionKey);
-                            continue;
-                        }
+//                        if (selectionKey.isWritable()) {
+//                            handleSendDataToClient(selectionKey);
+//                        }
                     }
                 } catch (IOException | ClassNotFoundException ex) {
                     logger.severe("SERVER THREAD EXCEPTION HAPPENED");
@@ -116,19 +119,45 @@ public class WordSearchServer {
             logger.info("Client connected to: " + clientSocketChannel.socket().getRemoteSocketAddress());
 
             clientSocketChannel.register(selector, SelectionKey.OP_READ);
-            System.out.println("Client is registered as read");
+
+            // Add Channel To list
+            clientChannels.add(clientSocketChannel);
         }
 
         // read from the socket channel
         private void handleReadDataFromClient(SelectionKey selectionKey) throws IOException, ClassNotFoundException {
-           logger.info("Client wants to send data");
+            logger.info("Reading client data...");
+            SocketChannel clientChannel = (SocketChannel) selectionKey.channel();
 
+            ByteBuffer byteBuffer = ByteBuffer.allocate(2048);
+            clientChannel.read(byteBuffer);
+            ByteArrayInputStream byteArrayInputStream = new ByteArrayInputStream(byteBuffer.array());
+            ObjectInputStream objectInputStream = new ObjectInputStream(byteArrayInputStream);
+            objectInputStream.close();
 
+            Client newClient = (Client) objectInputStream.readObject();
+
+            System.out.println(newClient);
+            logger.info("Message was readed from SERVER");
         }
 
         // send data to client channel
-        private void handleSendDataToClient(SelectionKey selectionKey) throws IOException {
-           // TODO: Send Data to Client
+        private void handleSendDataToClient() throws IOException {
+            logger.info("Server wants to send data to client");
+//            SocketChannel clientChannel = serverSocketChannel;
+            for(SocketChannel socketChannel: clientChannels) {
+                ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
+
+                ObjectOutputStream objectOutputStream = new ObjectOutputStream(byteArrayOutputStream);
+                objectOutputStream.writeObject(new Client("Server Furkan", 200));
+                objectOutputStream.flush();
+                objectOutputStream.close();
+
+                byte[] byteArray  = byteArrayOutputStream.toByteArray();
+                ByteBuffer byteBuffer = ByteBuffer.wrap(byteArray);
+                socketChannel.write(byteBuffer);
+            }
+            logger.info("Server successfully sended data");
         }
 
     }

@@ -22,6 +22,7 @@ public class WordSearchClient {
     private SocketChannel clientSocketChannel;
     private Selector selector;
 
+
     private Logger logger = Logger.getGlobal();
 
     public WordSearchClient(String nickName, int port, String host) throws IOException {
@@ -45,6 +46,7 @@ public class WordSearchClient {
     private class WordSearchClientThread extends Thread {
         @Override
         public void run() {
+
             logger.info("Client Thread started");
 
             while(true) {
@@ -70,32 +72,61 @@ public class WordSearchClient {
                             System.out.println("Connectable");
 
                             if (client.isConnectionPending()) {
-                                try {
-                                    client.finishConnect();
-                                } catch (IOException ex) {ex.printStackTrace();}
+                                client.finishConnect();
                             }
 
-                            client.register(selector, SelectionKey.OP_WRITE);
-                            continue;
-                        }
+                            client.register(selector, SelectionKey.OP_READ);
+                            sendNewClientData();
 
-                        if (selectionKey.isWritable()) {
-                            System.out.println("Writable");
                             continue;
                         }
 
                         if (selectionKey.isReadable()) {
                             System.out.println("Readable");
+                            readServerMessage();
                         }
                     }
 
 
-                } catch (IOException e) {
+                } catch (IOException | ClassNotFoundException e ) {
                     e.printStackTrace();
                 }
             }
         }
+
+        private void readServerMessage() throws IOException, ClassNotFoundException {
+            logger.info("Reading SERVER data...");
+            SocketChannel clientChannel = clientSocketChannel;
+
+            ByteBuffer byteBuffer = ByteBuffer.allocate(2048);
+            clientChannel.read(byteBuffer);
+            ByteArrayInputStream byteArrayInputStream = new ByteArrayInputStream(byteBuffer.array());
+            ObjectInputStream objectInputStream = new ObjectInputStream(byteArrayInputStream);
+            objectInputStream.close();
+
+            Client newClient = (Client) objectInputStream.readObject();
+
+            System.out.println(newClient);
+            logger.info("Message was readed from client");
+        }
+
+        private void sendNewClientData() throws IOException {
+            SocketChannel clientChannel = clientSocketChannel;
+            ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
+
+            ObjectOutputStream objectOutputStream = new ObjectOutputStream(byteArrayOutputStream);
+            Client newClient = new Client(NICKNAME, 0);
+
+            objectOutputStream.writeObject(newClient);
+            objectOutputStream.flush();
+            objectOutputStream.close();
+
+            byte[] byteArray  = byteArrayOutputStream.toByteArray();
+            ByteBuffer byteBuffer = ByteBuffer.wrap(byteArray);
+
+            clientChannel.write(byteBuffer);
+
+            logger.info("Client successfully sended data");
+        }
     }
-
-
 }

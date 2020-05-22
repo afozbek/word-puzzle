@@ -3,8 +3,7 @@ package com.wordpuzzle;
 import java.io.Serializable;
 
 public class Client implements Serializable {
-
-    private static final long serialVersionUID = 1234L;
+    private static final long serialVersionUID = -7837159696865040287L;
     private String nickName;
     private int score;
 
@@ -32,6 +31,6 @@ public class Client implements Serializable {
 
     @Override
     public String toString() {
-        return "NickName: " + nickName + "Score: " + score;
+        return "NickName: " + nickName + "\nScore: " + score;
     }
 }
