@@ -22,6 +22,8 @@ public class WordSearchClient {
     private SocketChannel clientSocketChannel;
     private Selector selector;
 
+    private Client newClient;
+
 
     private Logger logger = Logger.getGlobal();
 
@@ -44,6 +46,7 @@ public class WordSearchClient {
     }
 
     private class WordSearchClientThread extends Thread {
+
         @Override
         public void run() {
 
@@ -115,7 +118,8 @@ public class WordSearchClient {
             ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
 
             ObjectOutputStream objectOutputStream = new ObjectOutputStream(byteArrayOutputStream);
-            Client newClient = new Client(NICKNAME, 0);
+            Client client = new Client(NICKNAME, 0);
+            newClient = client;
 
             objectOutputStream.writeObject(newClient);
             objectOutputStream.flush();

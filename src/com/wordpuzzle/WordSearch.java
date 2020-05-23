@@ -24,7 +24,7 @@ public class WordSearch {
 
     final static Random rand = new Random();
 
-    static List<String> readWords(String filename) {
+    static List<String> readWords(String filename, int nRows, int nCols) {
         int maxLen = Math.max(nRows, nCols);
 
         List<String> words = new ArrayList<>();
@@ -35,7 +35,6 @@ public class WordSearch {
                     words.add(s);
             }
         } catch (FileNotFoundException e) {
-            System.out.println("Hello World");
             System.out.println(e);
         }
         return words;
@@ -140,7 +139,8 @@ public class WordSearch {
 
         int lettersPlaced = len - overlaps;
         if (lettersPlaced > 0) {
-            grid.solutions.add(format("%-10s (%d,%d)(%d,%d)", word, c, r, cc, rr));
+//            grid.solutions.add(format("%-10s (%d,%d)(%d,%d)", word, c, r, cc, rr));
+            grid.solutions.add(word);
         }
 
         return lettersPlaced;
@@ -157,6 +157,7 @@ public class WordSearch {
         System.out.println("Number of words: " + size);
 
         System.out.println("\n     0  1  2  3  4  5  6  7  8  9");
+        // TODO: KARAKTER LİSTEMELE
         for (int r = 0; r < nRows; r++) {
             System.out.printf("%n%d   ", r);
             for (int c = 0; c < nCols; c++)
@@ -169,11 +170,12 @@ public class WordSearch {
             System.out.printf("%s   %s%n", grid.solutions.get(i),
                     grid.solutions.get(i + 1));
         }
-        if (size % 2 == 1)
-            System.out.println(grid.solutions.get(size - 1));
+//        if (size % 2 == 1)
+//            System.out.println(grid.solutions.get(size - 1));
     }
 
     public static void main(String[] args) {
-        printResult(createWordSearch(readWords(dictionaryFileName)));
+
+        printResult(createWordSearch(readWords(dictionaryFileName, 10, 10)));
     }
 }

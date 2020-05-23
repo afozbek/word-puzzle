@@ -18,6 +18,8 @@ import java.util.Set;
 import java.util.List;
 import java.util.logging.Logger;
 
+import static com.wordpuzzle.WordSearch.createWordSearch;
+
 public class WordSearchServer {
     // INSTANCE VARIABLES
     private final InetSocketAddress listenAddress;
@@ -26,12 +28,21 @@ public class WordSearchServer {
     private final Logger logger = Logger.getGlobal();
 
     private List<SocketChannel> clientChannels;
+    private List<Client> clients;
+
 
     private final int PORT;
     private final String HOST_ADDRESS;
     private final int WIN_POINT;
     private final int BOARD_X;
     private final int BOARD_Y;
+
+    private char[][] boardCharacters;
+    private List<String> solutions;
+
+    final static String dictionaryFileName = "statics/dictionary.txt";
+
+//    private final List<String> gameWords;
 
     public WordSearchServer(String hostAddress, int port, int winPoint, int boardX, int boardY) throws IOException {
         PORT = port;
@@ -41,6 +52,7 @@ public class WordSearchServer {
         BOARD_Y = boardY;
 
         clientChannels = new ArrayList<>();
+        clients = new ArrayList<>();
 
 //        new KelimeOyunu(winPoint, boardX, boardY);
 
@@ -53,6 +65,22 @@ public class WordSearchServer {
         // bind server socket channel to port
         serverSocketChannel.socket().bind(listenAddress);
         serverSocketChannel.register(this.selector, SelectionKey.OP_ACCEPT);
+
+        // TODO: Bu aşamaya geldiyse socket başarılı bir şekilde oluşmuş
+        // TODO: Board dataları hazırla
+        WordSearch.Grid grid = createWordSearch(WordSearch.readWords(dictionaryFileName, BOARD_X, BOARD_Y));
+        boardCharacters = grid.cells;
+        solutions = grid.solutions;
+
+//        for (int r = 0; r < BOARD_X; r++) {
+//            System.out.printf("%n%d   ", r);
+//            for (int c = 0; c < BOARD_Y; c++)
+//                System.out.printf(" %c ", grid.cells[r][c]);
+//        }
+//
+//        for(String solution:grid.solutions) {
+//            System.out.println(solution);
+//        }
 
         WordSearchMainThread mainThread = new WordSearchMainThread();
         mainThread.start();
@@ -137,7 +165,11 @@ public class WordSearchServer {
 
             Client newClient = (Client) objectInputStream.readObject();
 
-            System.out.println(newClient);
+            if (newClient == null) {
+                System.out.println("NULL POINTER");
+            }
+
+            clients.add(newClient);
             logger.info("Message was readed from SERVER");
         }
 
