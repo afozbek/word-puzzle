@@ -148,6 +148,8 @@ public class WordSearchServer {
 
             clientSocketChannel.register(selector, SelectionKey.OP_READ);
 
+            sendInitialDataToClient(clientSocketChannel);
+
             // Add Channel To list
             clientChannels.add(clientSocketChannel);
         }
@@ -190,6 +192,22 @@ public class WordSearchServer {
                 socketChannel.write(byteBuffer);
             }
             logger.info("Server successfully sended data");
+        }
+
+        private void sendInitialDataToClient(SocketChannel clientSocketChannel) throws IOException {
+            ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
+
+            ObjectOutputStream objectOutputStream = new ObjectOutputStream(byteArrayOutputStream);
+
+            ServerToClientBoard initialGameBoard = new ServerToClientBoard(boardCharacters);
+
+            objectOutputStream.writeObject(initialGameBoard);
+            objectOutputStream.flush();
+            objectOutputStream.close();
+
+            byte[] byteArray  = byteArrayOutputStream.toByteArray();
+            ByteBuffer byteBuffer = ByteBuffer.wrap(byteArray);
+            clientSocketChannel.write(byteBuffer);
         }
 
     }

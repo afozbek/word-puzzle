@@ -1,5 +1,6 @@
 package com.wordpuzzle;
 
+import javax.swing.*;
 import java.io.*;
 import java.net.InetSocketAddress;
 import java.net.Socket;
@@ -24,6 +25,7 @@ public class WordSearchClient {
 
     private Client newClient;
 
+    private ClientGameBoard clientGameBoard;
 
     private Logger logger = Logger.getGlobal();
 
@@ -107,9 +109,11 @@ public class WordSearchClient {
             ObjectInputStream objectInputStream = new ObjectInputStream(byteArrayInputStream);
             objectInputStream.close();
 
-            Client newClient = (Client) objectInputStream.readObject();
+            ServerToClientBoard clientBoard = (ServerToClientBoard) objectInputStream.readObject();
+            char[][] characters = clientBoard.getGameCharacters();
 
-            System.out.println(newClient);
+            printCharacters(characters);
+
             logger.info("Message was readed from client");
         }
 
@@ -131,6 +135,14 @@ public class WordSearchClient {
             clientChannel.write(byteBuffer);
 
             logger.info("Client successfully sended data");
+        }
+
+        private void printCharacters(char[][] characters) {
+            for (int r = 0; r < characters.length; r++) {
+                System.out.printf("%n%d   ", r);
+                for (int c = 0; c < characters[r].length; c++)
+                    System.out.printf(" %c ", characters[r][c]);
+            }
         }
     }
 }
