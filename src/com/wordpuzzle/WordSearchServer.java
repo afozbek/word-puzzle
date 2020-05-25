@@ -72,15 +72,9 @@ public class WordSearchServer {
         boardCharacters = grid.cells;
         solutions = grid.solutions;
 
-//        for (int r = 0; r < BOARD_X; r++) {
-//            System.out.printf("%n%d   ", r);
-//            for (int c = 0; c < BOARD_Y; c++)
-//                System.out.printf(" %c ", grid.cells[r][c]);
-//        }
-//
-//        for(String solution:grid.solutions) {
-//            System.out.println(solution);
-//        }
+        for(String solution:solutions){
+            System.out.println(solution);
+        }
 
         WordSearchMainThread mainThread = new WordSearchMainThread();
         mainThread.start();
@@ -115,7 +109,7 @@ public class WordSearchServer {
 
                         if (selectionKey.isAcceptable()) {
                             handleClientConnection(selectionKey);
-                            handleSendDataToClient();
+//                            handleSendDataToClient();
                             continue;
                         }
 
@@ -165,13 +159,57 @@ public class WordSearchServer {
             ObjectInputStream objectInputStream = new ObjectInputStream(byteArrayInputStream);
             objectInputStream.close();
 
-            Client newClient = (Client) objectInputStream.readObject();
+            Object newObject = objectInputStream.readObject();
+            Class newClass = newObject.getClass();
 
-            if (newClient == null) {
-                System.out.println("NULL POINTER");
+            if (newClass == Client.class) {
+                Client newClient = (Client) newObject;
+
+                System.out.println("SERVER" + Client.class.getName() + " okudu");
+                clients.add(newClient);
+            } else if (newClass == ClientToServerAnswer.class) {
+                ClientToServerAnswer clientToServerAnswer = (ClientToServerAnswer) newObject;
+
+                String answer = clientToServerAnswer.getAnswer();
+                String nickName = clientToServerAnswer.getNickName();
+                // TODO: Kullanıcıya bak eğer varsa cevabını kontrol et doğruysa puan ver
+                System.out.println("SERVER" + ClientToServerAnswer.class.getName() + " okudu");
+
+                Client ourClient = null;
+                for (Client client:clients) {
+                    if (client.getNickName().equals(nickName)) {
+                        ourClient = client;
+                    }
+                }
+
+                if (ourClient == null) {
+                    // TODO:
+                } else {
+                    boolean isAnswerCorrect = false;
+                    for (String solution:solutions) {
+                        if (solution.equals(answer)) {
+                            isAnswerCorrect = true;
+                        }
+                    }
+
+                    if (isAnswerCorrect) {
+                        ourClient.setScore(ourClient.getScore() + 1);
+                        // TODO: BİLDİĞİNE DAİR MESAJ GÖNDEREBİLİR MİSİN DEVELOPER ARKADAŞIM
+                        if (WIN_POINT == ourClient.getScore()) {
+                            JOptionPane.showMessageDialog(null, "Tebrikler " + nickName + ". Oyunu Kazandınız..............");
+
+                        } else {
+                            JOptionPane.showMessageDialog(null, "Tebrikler " + nickName + ". Doğru tahmin ettiniz. Puanınız. " + ourClient.getScore());
+                        }
+                    } else {
+                        // TODO: HATA MESAJI GÖNDEREBİLİR MİSİN DEVELOPER ARKADAŞIM
+                        JOptionPane.showMessageDialog(null, "Maalesef cevabınız doğru değil");
+                    }
+                }
+
             }
 
-            clients.add(newClient);
+
             logger.info("Message was readed from SERVER");
         }
 

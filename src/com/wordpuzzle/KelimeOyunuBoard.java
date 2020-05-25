@@ -46,7 +46,6 @@ public class KelimeOyunuBoard extends JFrame{
 
     public KelimeOyunuBoard()
     {
-
         super("Kelime Oyunu");
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 
@@ -68,7 +67,7 @@ public class KelimeOyunuBoard extends JFrame{
         mainGamePanel.add(txt_alan_y);
         mainGamePanel.add(lbl_kazanma_puani);
 
-        txt_kazanma_puani.setText("15");
+        txt_kazanma_puani.setText("3");
         mainGamePanel.add(txt_kazanma_puani);
         mainGamePanel.add(lbl_port_kur);
 

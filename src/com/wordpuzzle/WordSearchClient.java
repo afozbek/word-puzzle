@@ -1,6 +1,9 @@
 package com.wordpuzzle;
 
 import javax.swing.*;
+import java.awt.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.io.*;
 import java.net.InetSocketAddress;
 import java.net.Socket;
@@ -26,6 +29,8 @@ public class WordSearchClient {
     private Client newClient;
 
     private ClientGameBoard clientGameBoard;
+    private TextField answerField;
+    private JButton answerButton;
 
     private Logger logger = Logger.getGlobal();
 
@@ -99,6 +104,8 @@ public class WordSearchClient {
             }
         }
 
+
+        // CLIENT BOARD
         private void readServerMessage() throws IOException, ClassNotFoundException {
             logger.info("Reading SERVER data...");
             SocketChannel clientChannel = clientSocketChannel;
@@ -112,6 +119,8 @@ public class WordSearchClient {
             ServerToClientBoard clientBoard = (ServerToClientBoard) objectInputStream.readObject();
             char[][] characters = clientBoard.getGameCharacters();
 
+            clientGameBoard = new ClientGameBoard("Client Game Board");
+            clientGameBoard.setDefaultCloseOperation(JFrame.HIDE_ON_CLOSE);
             printCharacters(characters);
 
             logger.info("Message was readed from client");
@@ -138,11 +147,67 @@ public class WordSearchClient {
         }
 
         private void printCharacters(char[][] characters) {
+            JPanel clientGameBoardPanel = new JPanel();
+
+            clientGameBoardPanel.setLayout(new GridLayout(characters.length + 1, characters[0].length));
+            clientGameBoard.add(clientGameBoardPanel);
+
             for (int r = 0; r < characters.length; r++) {
-                System.out.printf("%n%d   ", r);
-                for (int c = 0; c < characters[r].length; c++)
-                    System.out.printf(" %c ", characters[r][c]);
+                for (int c = 0; c < characters[r].length; c++) {
+                    JLabel label = new JLabel(String.valueOf(characters[r][c]));
+                    clientGameBoardPanel.add(label);
+                }
             }
+
+            answerField = new TextField();
+            answerButton = new JButton("OK");
+
+            clientGameBoardPanel.add(new JLabel("Kelime Giriniz"));
+            clientGameBoardPanel.add(answerField);
+            clientGameBoardPanel.add(answerButton);
+
+            answerButton.addActionListener(new ActionListener() {
+                @Override
+                public void actionPerformed(ActionEvent e) {
+                    try {
+                        handleAnswerButton();
+                    } catch (IOException ioException) {
+                        ioException.printStackTrace();
+                    }
+                }
+            });
+
+
+            clientGameBoard.pack();
+            clientGameBoard.setVisible(true);
+            Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
+
+            clientGameBoard.setSize(screenSize.width - 100, screenSize.height - 50);
+            clientGameBoard.setLocationRelativeTo(null);
+        }
+
+        private void handleAnswerButton() throws IOException {
+            String answer = answerField.getText();
+            System.out.println(answer);
+            // TODO: send answer to server
+
+            SocketChannel clientChannel = clientSocketChannel;
+            ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
+
+            ObjectOutputStream objectOutputStream = new ObjectOutputStream(byteArrayOutputStream);
+            ClientToServerAnswer newAnswer = new ClientToServerAnswer(NICKNAME, answer);
+
+            objectOutputStream.writeObject(newAnswer);
+            objectOutputStream.flush();
+            objectOutputStream.close();
+
+            byte[] byteArray  = byteArrayOutputStream.toByteArray();
+            ByteBuffer byteBuffer = ByteBuffer.wrap(byteArray);
+
+            clientChannel.write(byteBuffer);
+
+            logger.info("Client successfully sended data");
+
         }
     }
 }

@@ -9,6 +9,7 @@ public class ClientGameBoard extends JFrame {
 
     public ClientGameBoard(String title) throws HeadlessException {
         super(title);
+//        this.setSize(new Dimension(1000, 600));
     }
 
     public char[][] getGameCharacters() {
